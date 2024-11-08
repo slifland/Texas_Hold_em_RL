@@ -7,13 +7,13 @@ class ConservativePokerAgent():
 
     def eval_step(self, state):
         hand_strength = self.evaluate_hand(state)
-        fold, call, raise_ = 0, 1, 2
+        fold, call, raise_ = 2, 0, 1
         if hand_strength >= 0.8:
-            return raise_
+            return raise_, {}
         elif hand_strength >= 0.6:
-            return call
+            return call, {}
         else:
-            return fold
+            return fold, {}
 
     def evaluate_hand(self, state):
         state = state['raw_obs']
