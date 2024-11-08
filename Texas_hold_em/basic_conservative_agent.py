@@ -8,7 +8,6 @@ class ConservativePokerAgent():
     def eval_step(self, state):
         hand_strength = self.evaluate_hand(state)
         fold, call, raise_ = 0, 1, 2
-
         if hand_strength >= 0.8:
             return raise_
         elif hand_strength >= 0.6:
@@ -17,6 +16,8 @@ class ConservativePokerAgent():
             return fold
 
     def evaluate_hand(self, state):
+        state = state['raw_obs']
+        print(state)
         cards = state['hand'] + state['public_cards']
         strength = self.simple_hand_strength(cards)
         return strength
