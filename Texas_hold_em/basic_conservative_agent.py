@@ -4,6 +4,7 @@ import random
 class ConservativePokerAgent():
     def __init__(self, num_actions):
         self.num_actions = num_actions
+        self.use_raw = True
 
     def eval_step(self, state):
         hand_strength = self.evaluate_hand(state)
@@ -14,6 +15,18 @@ class ConservativePokerAgent():
             return call, {}
         else:
             return fold, {}
+        
+    def step(self, state):
+        # Define your action logic here
+        hand_strength = self.evaluate_hand(state)
+        fold, call, raise_ = 2, 0, 1
+
+        if hand_strength >= 0.8:
+            return raise_
+        elif hand_strength >= 0.6:
+            return call
+        else:
+            return fold
 
     def evaluate_hand(self, state):
         state = state['raw_obs']
