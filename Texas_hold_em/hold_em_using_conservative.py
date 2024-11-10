@@ -29,11 +29,10 @@ def run(args):
     set_seed(42)
 
     # Set agents
-    agent = RandomAgent(num_actions=env.num_actions)
+    agent = ConservativePokerAgent(num_actions= env.num_actions)
     agents = [agent]
-    for _ in range(1, env.num_players - 1):
+    for _ in range(1, env.num_players):
         agents.append(RandomAgent(num_actions=env.num_actions))
-    agents.append(ConservativePokerAgent(num_actions = env.num_actions))
     env.set_agents(agents)
 
      # Start training
