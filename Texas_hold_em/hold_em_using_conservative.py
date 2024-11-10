@@ -87,7 +87,7 @@ if __name__ == '__main__':
     parser.add_argument(
         '--log_dir',
         type=str,
-        default='experiments/holdem_random_result/',
+        default='experiments/holdem_basic_conservative_result/',
     )
     parser.add_argument(
         '--num_episodes',
