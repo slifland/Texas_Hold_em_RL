@@ -7,30 +7,42 @@ class ConservativePokerAgent():
         self.use_raw = True
 
     def eval_step(self, state):
+        state = state['raw_obs']
+        legal_actions = state['legal_actions']
         hand_strength = self.evaluate_hand(state)
-        fold, call, raise_ = 2, 0, 1
         if hand_strength >= 0.8:
-            return "raise", {}
+            if('raise' in legal_actions):
+                return "raise", {}
+            return 'call', {}
         elif hand_strength >= 0.6:
+            if('check' in legal_actions):
+                return "check", {}
             return "call", {}
         else:
+            if('check' in legal_actions):
+                return "check", {}
             return "fold", {}
+
         
     def step(self, state):
-        # Define your action logic here
+        state = state['raw_obs']
+        legal_actions = state['legal_actions']
         hand_strength = self.evaluate_hand(state)
         fold, call, raise_ = 2, 0, 1
-
         if hand_strength >= 0.8:
-            return "raise"
+            if('raise' in legal_actions):
+                return "raise"
+            return 'call'
         elif hand_strength >= 0.6:
+            if('check' in legal_actions):
+                return "check"
             return "call"
         else:
+            if('check' in legal_actions):
+                return "check"
             return "fold"
 
     def evaluate_hand(self, state):
-        state = state['raw_obs']
-        print(state)
         cards = state['hand'] + state['public_cards']
         strength = self.simple_hand_strength(cards)
         return strength
