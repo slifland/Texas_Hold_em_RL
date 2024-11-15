@@ -6,7 +6,7 @@ class DQNAgent():
     def eval_step(self, state):
         state = state['raw_obs']
         legal_actions = state['legal_actions']
-        return 'fold'
+        return 'fold', {}
 
     def step(self, state):
         state = state['raw_obs']
