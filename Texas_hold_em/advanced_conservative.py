@@ -1,7 +1,8 @@
 from collections import Counter
 
 class AdvancedPokerAgent():
-    def card_rank(card):
+    
+    def card_rank(self, card):
         rank = card[1]
         if rank == 'T':
             return 10
@@ -16,24 +17,24 @@ class AdvancedPokerAgent():
         else:
             return int(rank)
 
-    def card_suit(card):
+    def card_suit(self, card):
         return card[0]
 
-    def is_flush(cards):
-        suits = [card_suit(card) for card in cards]
+    def is_flush(self, cards):
+        suits = [self.card_suit(card) for card in cards]
         return len(set(suits)) == 1
 
-    def is_straight(ranks):
+    def is_straight(self, ranks):
         sorted_ranks = sorted(ranks)
         return sorted_ranks == list(range(min(ranks), max(ranks) + 1))
 
-    def classify_hand(cards):
-        ranks = [card_rank(card) for card in cards]
+    def classify_hand(self, cards):
+        ranks = [self.card_rank(card) for card in cards]
         rank_counts = Counter(ranks)
         distinct_ranks = len(rank_counts)
         highest_count = max(rank_counts.values())
-        flush = is_flush(cards)
-        straight = is_straight(ranks)
+        flush = self.is_flush(cards)
+        straight = self.is_straight(ranks)
         max_rank = max(ranks)
         
         if flush and straight and max_rank == 14:  
@@ -57,9 +58,9 @@ class AdvancedPokerAgent():
         else: 
             return 1
 
-    def poker_hand_heuristic(cards):
-        base_score = classify_hand(cards)
-        ranks = [card_rank(card) for card in cards]
+    def poker_hand_heuristic(self, cards):
+        base_score = self.classify_hand(cards)
+        ranks = [self.card_rank(card) for card in cards]
         rank_counts = Counter(ranks)
         
         sorted_ranks = sorted(rank_counts.items(), key=lambda x: (-x[1], -x[0]))
