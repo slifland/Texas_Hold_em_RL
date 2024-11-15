@@ -8,7 +8,7 @@ class ConservativePokerAgent():
 
     def eval_step(self, state):
         state = state['raw_obs']
-        #print(state)
+        print(state)
         legal_actions = state['legal_actions']
         hand_strength = self.evaluate_hand(state)
         if hand_strength >= 0.8:
@@ -55,5 +55,6 @@ class ConservativePokerAgent():
             return 0.8  
         if any(rank in ['A', 'K', 'Q', 'J'] for rank in ranks):
             return 0.6  
-        return 0.4  
+        return 0.4
+
 

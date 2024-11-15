@@ -1,4 +1,5 @@
 from torch import nn
+import torch
 from collections import deque
 import torch.nn.functional as F
 import random
@@ -46,3 +47,41 @@ class DQNAgent():
         state = state['raw_obs']
         legal_actions = state['legal_actions']
         return 'fold'
+
+    def state_to_dqn_input(self, state : {}) -> torch.Tensor:
+        input_tensor = torch.zeros(52)
+        #0-12 are spade A - K
+        #13-25 are heart A - K
+        #26-38 are diamond A - K
+        #39-51 club A - K
+        # 0 represents not seen, 1 represents in hand, 2 represents public card
+        for value in state['hand'].values():
+            val = self.determineIndex(value)
+            input_tensor[val] = 1
+        for value in state['public_cards'].values():
+            val = self.determineIndex(value)
+            input_tensor[val] = 2
+        return input_tensor
+    def determineIndex(self, card):
+        val = 0
+        match card[0]:
+            case 'S':
+                val = 0
+            case 'H':
+                val = 13
+            case 'D':
+                val = 26
+            case 'C':
+                val = 39
+        match card[1]:
+            case 'A':
+                val += 0
+            case 'T':
+                val += 10
+            case 'Q':
+                val += 11
+            case 'K':
+                val += 12
+            case _:
+                val += card[1]
+        return val
