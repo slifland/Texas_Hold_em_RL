@@ -8,6 +8,7 @@ class ConservativePokerAgent():
 
     def eval_step(self, state):
         state = state['raw_obs']
+        #print(state)
         legal_actions = state['legal_actions']
         hand_strength = self.evaluate_hand(state)
         if hand_strength >= 0.8:
