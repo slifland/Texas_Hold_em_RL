@@ -2,6 +2,7 @@ import argparse
 import pprint
 import os
 import torch
+import matplotlib
 
 import rlcard
 from rlcard.agents import RandomAgent
