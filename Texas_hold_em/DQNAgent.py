@@ -49,7 +49,7 @@ class DQNAgent():
         return 'fold'
 
     def state_to_dqn_input(self, state : {}) -> torch.Tensor:
-        input_tensor = torch.zeros(52)
+        input_tensor = torch.zeros(57)
         #0-12 are spade A - K
         #13-25 are heart A - K
         #26-38 are diamond A - K
@@ -61,6 +61,13 @@ class DQNAgent():
         for value in state['public_cards'].values():
             val = self.determineIndex(value)
             input_tensor[val] = 2
+        #number of chips you have
+        input_tensor[52] = state['my_chips']
+        #0 for invalid action, 1 for valid action - call, raise, fold, check
+        input_tensor[53] = 1 if (state['legal_actions'].contains('call')) else 0
+        input_tensor[54] = 1 if (state['legal_actions'].contains('raise')) else 0
+        input_tensor[55] = 1 if (state['legal_actions'].contains('fold')) else 0
+        input_tensor[56] = 1 if (state['legal_actions'].contains('check')) else 0
         return input_tensor
     def determineIndex(self, card):
         val = 0
