@@ -48,7 +48,7 @@ class DQNAgent():
         legal_actions = state['legal_actions']
         return 'fold'
 
-    def state_to_dqn_input(self, state : {}) -> torch.Tensor:
+    def state_to_dqn_input(self, state : dict[str, int]) -> torch.Tensor:
         input_tensor = torch.zeros(52)
         #0-12 are spade A - K
         #13-25 are heart A - K
