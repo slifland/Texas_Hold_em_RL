@@ -37,6 +37,9 @@ class DQNAgent():
     def __init__(self, num_actions):
         self.num_actions = num_actions
         self.use_raw = True
+        self.policy_dqn = DQN(56, 56, num_actions)
+        self.target_dqn = DQN(56, 56, num_actions)
+        self.replay_memory = ReplayMemory(20000)
 
     def eval_step(self, state):
         state = state['raw_obs']
@@ -92,3 +95,10 @@ class DQNAgent():
             case _:
                 val += card[1]
         return val
+
+    def save_to_memory(self, ts):
+        self.replay_memory.append(ts)
+
+    def feed(self, ts):
+        self.save_to_memory(ts)
+        pass

@@ -31,8 +31,8 @@ def run(args):
     set_seed(42)
 
     # Set agents
-    agent = ConservativePokerAgent(num_actions= env.num_actions)
-    #agent = DQNAgent(num_actions=env.num_actions)
+    #agent = ConservativePokerAgent(num_actions= env.num_actions)
+    agent = DQNAgent(num_actions=env.num_actions)
     agents = [agent]
     for _ in range(1, env.num_players):
         agents.append(RandomAgent(num_actions=env.num_actions))
@@ -47,6 +47,10 @@ def run(args):
 
             # Reorganaize the data to be state, action, reward, next_state, done
             trajectories = reorganize(trajectories, payoffs)
+
+            for ts in trajectories[0]:
+                agent.feed(ts)
+
 
             # Evaluate the performance. Play with random agents.
             if episode % args.evaluate_every == 0:
