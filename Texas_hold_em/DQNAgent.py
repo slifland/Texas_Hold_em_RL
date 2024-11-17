@@ -41,6 +41,8 @@ class DQNAgent():
         self.policy_dqn = DQN(56, 56, num_actions)
         self.target_dqn = DQN(56, 56, num_actions)
         self.replay_memory = ReplayMemory(20000)
+        self.loss_fn = nn.MSELoss()
+        self.optimizer = torch.optim.Adam(self.policy_dqn.parameters(), lr=1e-3)
 
     def eval_step(self, state):
         state = state['raw_obs']
@@ -119,6 +121,31 @@ class DQNAgent():
                         reward + self.discount_factor_g * self.target_dqn(
                             self.state_to_dqn_input(next_state).max())
                     )
+            current_q = self.policy_dqn(self.state_to_dqn_input(state))
+            current_q_list.append(current_q)
+
+            target_q = self.target_dqn(self.state_to_dqn_input(state))
+            #adjust line - assumes action is coded as int, but its coded as string here
+            action = self.action_string_to_int(action)
+            target_q[action] = target
+            target_q_list.append(target_q)
+
+        loss = self.loss_fn(torch.stack(current_q_list), torch.stack(target_q_list))
+        # Optimize the model
+        self.optimizer.zero_grad()
+        loss.backward()
+        self.optimizer.step()
+
+    def action_string_to_int(self, action):
+        match action:
+            case 'fold':
+                return 0
+            case 'call':
+                return 1
+            case 'raise':
+                return 2
+            case 'check':
+                return 3
 
 
 

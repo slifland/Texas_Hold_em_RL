@@ -116,4 +116,10 @@ if __name__ == '__main__':
         default='random',
         choices=[
             'dqn',
-            
+            'nfsp',
+        ],
+    )
+
+    args = parser.parse_args()
+
+    run(args)
