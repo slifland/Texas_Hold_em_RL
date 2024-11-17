@@ -35,6 +35,7 @@ class ReplayMemory():
 
 class DQNAgent():
     def __init__(self, num_actions):
+        self.discount_factor_g = 0.9
         self.num_actions = num_actions
         self.use_raw = True
         self.policy_dqn = DQN(56, 56, num_actions)
@@ -96,9 +97,28 @@ class DQNAgent():
                 val += card[1]
         return val
 
-    def save_to_memory(self, ts):
-        self.replay_memory.append(ts)
+    def save_to_memory(self, transition):
+        self.replay_memory.append(transition)
 
     def feed(self, ts):
-        self.save_to_memory(ts)
+        (state, action, reward, next_state, done) = tuple(ts)
+        self.save_to_memory((state['obs'], action, reward, next_state['obs'], list(next_state['legal_actions'].keys()), done))
+        self.train()
         pass
+
+    def train(self):
+        current_q_list = []
+        target_q_list = []
+        to_train = self.replay_memory.sample(1000)
+        for state, action, reward, next_state, done, legal_actions in to_train:
+            if done:
+                target = torch.FloatTensor([reward])
+            else:
+                with torch.no_grad():
+                    target = torch.FloatTensor(
+                        reward + self.discount_factor_g * self.target_dqn(
+                            self.state_to_dqn_input(next_state).max())
+                    )
+
+
+

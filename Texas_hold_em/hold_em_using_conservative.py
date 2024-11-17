@@ -51,7 +51,6 @@ def run(args):
             for ts in trajectories[0]:
                 agent.feed(ts)
 
-
             # Evaluate the performance. Play with random agents.
             if episode % args.evaluate_every == 0:
                 logger.log_performance(
@@ -117,10 +116,4 @@ if __name__ == '__main__':
         default='random',
         choices=[
             'dqn',
-            'nfsp',
-        ],
-    )
-
-    args = parser.parse_args()
-
-    run(args)
+            
