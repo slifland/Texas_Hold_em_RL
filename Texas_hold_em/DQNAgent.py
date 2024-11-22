@@ -38,20 +38,59 @@ class DQNAgent():
         self.discount_factor_g = 0.9
         self.num_actions = num_actions
         self.use_raw = True
-        self.policy_dqn = DQN(56, 56, num_actions)
-        self.target_dqn = DQN(56, 56, num_actions)
+        self.policy_dqn = DQN(57, 57, num_actions)
+        self.target_dqn = DQN(57, 57, num_actions)
         self.replay_memory = ReplayMemory(20000)
         self.loss_fn = nn.MSELoss()
         self.optimizer = torch.optim.Adam(self.policy_dqn.parameters(), lr=1e-3)
+        self.epsilon = 0.1
+        self.step_count = 0
+
+    def action_as_string(self, action):
+        match action:
+            case 0:
+                return 'call'
+            case 1:
+                return 'raise'
+            case 2:
+                return 'fold'
+            case 3:
+                return 'check'
 
     def eval_step(self, state):
         state = state['raw_obs']
         legal_actions = state['legal_actions']
+        # Select action based on epsilon-greedy
+        if random.random() < self.epsilon:
+            # select random action
+            action = random.choice(legal_actions)
+        else:
+            # select best action
+            with torch.no_grad():
+                action = self.policy_dqn(self.state_to_dqn_input(state)).argmax().item()
+                action = self.action_as_string(action)
+        # Decay epsilon
+        self.epsilon = max(self.epsilon - 0.0001, 0)
+        if action in legal_actions:
+            return action, {}
         return 'fold', {}
 
     def step(self, state):
         state = state['raw_obs']
         legal_actions = state['legal_actions']
+        # Select action based on epsilon-greedy
+        if random.random() < self.epsilon:
+            # select random action
+            action = random.choice(legal_actions)
+        else:
+            # select best action
+            with torch.no_grad():
+                action = self.policy_dqn(self.state_to_dqn_input(state)).argmax().item()
+                action = self.action_as_string(action)
+        # Decay epsilon
+        self.epsilon = max(self.epsilon - 0.0001, 0)
+        if action in legal_actions:
+            return action
         return 'fold'
 
     def state_to_dqn_input(self, state : {}) -> torch.Tensor:
@@ -61,19 +100,22 @@ class DQNAgent():
         #26-38 are diamond A - K
         #39-51 club A - K
         # 0 represents not seen, 1 represents in hand, 2 represents public card
-        for value in state['hand'].values():
-            val = self.determineIndex(value)
-            input_tensor[val] = 1
-        for value in state['public_cards'].values():
-            val = self.determineIndex(value)
-            input_tensor[val] = 2
+        if 'hand' in state:
+            for value in state['hand']:
+                val = self.determineIndex(value)
+                input_tensor[val] = 1
+        if 'public_cards' in state:
+            for value in state['public_cards']:
+                val = self.determineIndex(value)
+                input_tensor[val] = 2
         #number of chips you have
-        input_tensor[52] = state['my_chips']
+        if('my_chips' in state):
+            input_tensor[52] = state['my_chips']
         #0 for invalid action, 1 for valid action - call, raise, fold, check
-        input_tensor[53] = 1 if (state['legal_actions'].contains('call')) else 0
-        input_tensor[54] = 1 if (state['legal_actions'].contains('raise')) else 0
-        input_tensor[55] = 1 if (state['legal_actions'].contains('fold')) else 0
-        input_tensor[56] = 1 if (state['legal_actions'].contains('check')) else 0
+        input_tensor[53] = 1 if ('call'in state['legal_actions']) else 0
+        input_tensor[54] = 1 if ('raise' in state['legal_actions']) else 0
+        input_tensor[55] = 1 if ('fold' in state['legal_actions']) else 0
+        input_tensor[56] = 1 if ('check' in state['legal_actions']) else 0
         return input_tensor
     def determineIndex(self, card):
         val = 0
@@ -88,30 +130,33 @@ class DQNAgent():
                 val = 39
         match card[1]:
             case 'A':
-                val += 0
+                val += 1
             case 'T':
                 val += 10
-            case 'Q':
+            case 'J':
                 val += 11
-            case 'K':
+            case 'Q':
                 val += 12
+            case 'K':
+                val += 13
             case _:
-                val += card[1]
-        return val
+                val += int(card[1])
+        return val - 1
 
     def save_to_memory(self, transition):
         self.replay_memory.append(transition)
 
     def feed(self, ts):
         (state, action, reward, next_state, done) = tuple(ts)
-        self.save_to_memory((state['obs'], action, reward, next_state['obs'], list(next_state['legal_actions'].keys()), done))
+        ts[0] = ts[0]['raw_obs']
+        self.save_to_memory((state['raw_obs'], action, reward, next_state['obs'], list(next_state['legal_actions'].keys()), done))
         self.train()
         pass
 
     def train(self):
         current_q_list = []
         target_q_list = []
-        to_train = self.replay_memory.sample(1000)
+        to_train = self.replay_memory.sample(min(len(self.replay_memory), 1000))
         for state, action, reward, next_state, done, legal_actions in to_train:
             if done:
                 target = torch.FloatTensor([reward])
@@ -135,6 +180,10 @@ class DQNAgent():
         self.optimizer.zero_grad()
         loss.backward()
         self.optimizer.step()
+        self.step_count += 1
+        if(self.step_count % 100 == 0):
+            self.target_dqn.load_state_dict(self.policy_dqn.state_dict())
+            self.step_count = 0
 
     def action_string_to_int(self, action):
         match action:
